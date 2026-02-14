@@ -1,0 +1,23 @@
+{
+  "embedding": {
+    "model": "default",
+    "dimension": 768
+  },
+  "llm": {
+    "model": "default",
+    "max_tokens": 500,
+    "temperature": 0.7
+  },
+  "retrieval": {
+    "k": 5,
+    "similarity_threshold": 0.7
+  },
+  "paths": {
+    "documents": "data/documents",
+    "vector_store": "data/vector_store/store.json"
+  },
+  "logging": {
+    "level": "INFO",
+    "file": null
+  }
+}
