@@ -1,0 +1,29 @@
+Vector Databases and Embeddings
+
+Vector databases are specialized systems designed to store and retrieve high-dimensional vectors efficiently. They are essential components of RAG systems.
+
+What are Embeddings?
+Embeddings are numerical representations of text that capture semantic meaning. Similar concepts have similar vector representations, enabling semantic search.
+
+Popular Embedding Models:
+1. Sentence Transformers: Efficient models for generating sentence embeddings
+2. OpenAI Embeddings: High-quality embeddings from OpenAI API
+3. BERT-based Models: Contextual embeddings from transformer models
+4. Custom Models: Fine-tuned for specific domains
+
+Vector Search Methods:
+- Cosine Similarity: Measures angle between vectors
+- Euclidean Distance: Measures straight-line distance
+- Dot Product: Measures vector alignment
+- FAISS: Facebook's library for efficient similarity search
+
+Choosing Vector Dimensions:
+- Smaller dimensions (128-384): Faster, lower memory
+- Larger dimensions (768-1536): Better accuracy, more resources
+- Trade-off between performance and quality
+
+Best Practices:
+- Use consistent embedding models for indexing and querying
+- Normalize vectors when using cosine similarity
+- Consider approximate nearest neighbor (ANN) for large datasets
+- Regularly update embeddings when documents change
