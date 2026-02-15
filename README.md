@@ -4,41 +4,56 @@ A comprehensive Retrieval-Augmented Generation (RAG) system for building intelli
 
 ## Features
 
-- **Document Ingestion**: Load and process multiple document formats (TXT, PDF, DOCX)
-- **Smart Chunking**: Recursive text splitting with overlap support
-- **Embeddings**: Generate embeddings using HuggingFace sentence transformers
-- **Vector Store**: In-memory vector storage with semantic search capabilities
-- **Retrieval**: Retrieve relevant documents based on semantic similarity
-- **LLM Integration**: Seamless integration with OpenAI and other LLM providers
+- **Document Ingestion**: Load and process multiple document formats (TXT, PDF, DOCX, MD)
+- **PDF to Markdown Conversion**: Extract text from PDFs with detailed analysis
+- **Smart Chunking**: LangChain's RecursiveCharacterTextSplitter with overlap support
+- **High-Quality Embeddings**: e5-large-v2 model (1024-dim) via HuggingFace
+- **Persistent Vector Store**: Chroma vector database with metadata support
+- **Advanced Retrieval**: Semantic search, metadata filtering, MMR (Max Marginal Relevance)
+- **Interactive Visualization**: 2D/3D t-SNE visualizations with Plotly
+- **LLM Integration**: Seamless integration with OpenAI, Anthropic, and other providers via LangChain
 - **GitHub Documentation Generator**: Automatically generate comprehensive documentation for GitHub repositories
-- **Modular Architecture**: Easily swap components for customization
+- **Modular Architecture**: Built on LangChain for easy customization and extension
+
+## Technology Stack
+
+- **Framework**: LangChain & LangChain Community
+- **Embeddings**: HuggingFace Transformers (e5-large-v2)
+- **Vector Store**: ChromaDB with persistent storage
+- **Visualization**: Plotly & scikit-learn (t-SNE)
+- **LLM Providers**: OpenAI, Anthropic (via LangChain)
+- **Document Processing**: PyPDF2, pdfplumber, LangChain text splitters
 
 ## Project Structure
 
 ```
 rag-knowledge-worker/
 ├── src/                           # Source code
-│   ├── data_ingestion/           # Document loading and processing
-│   ├── chunking/                 # Text splitting strategies
-│   ├── embeddings/               # Embedding generation
-│   ├── vector_store/             # Vector database management
-│   ├── retrieval/                # Retrieval mechanisms
-│   ├── llm/                      # LLM integrations
-│   ├── github_docs/              # GitHub documentation generator
-│   ├── utils/                    # Utility functions
-│   └── rag_system.py             # Main RAG orchestrator
+│   ├── data_ingestion.py          # Document loading and chunking (LangChain)
+│   ├── embedder.py                # HuggingFace embeddings & Chroma integration
+│   ├── visualize_vector_db.py     # t-SNE visualization utilities
+│   ├── pdf_converter.py           # PDF to Markdown conversion
+│   ├── rag_system.py              # Main RAG orchestrator (legacy)
+│   ├── github_docs/               # GitHub documentation generator
+│   ├── llm/                       # LLM integrations
+│   ├── retrieval/                 # Retrieval mechanisms
+│   ├── vector_store/              # Vector database management (legacy)
+│   └── utils/                     # Utility functions
+├── notebooks/                     # Jupyter notebooks
+│   └── pipeline.ipynb             # Complete RAG pipeline demonstration
 ├── config/                        # Configuration files
 ├── data/                          # Data storage
 │   ├── raw/                      # Raw documents
 │   └── processed/                # Processed documents
-├── vectors/                       # Vector database storage
-├── tests/                         # Unit tests
-├── examples/                      # Example scripts
+│       ├── pdf_markdown/         # Converted PDFs
+│       └── repo_summaries/       # GitHub repo documentation
+├── vectors/                       # Chroma vector database storage
+│   ├── chroma.sqlite3             # Metadata database
+│   └── [collection-id]/           # Vector data and indices
 ├── docs/                          # Documentation
 ├── logs/                          # Application logs
 ├── main.py                        # Entry point
 ├── requirements.txt               # Python dependencies
-├── setup.py                       # Package setup
 └── README.md                      # This file
 ```
 
@@ -99,55 +114,76 @@ stats = convert_all_pdfs(Path("data/raw"), Path("data/processed/pdf_markdown"))
 4. **Configure environment**
    ```bash
    cp .env.example .env
-   # Edit .env with your API keys and settings
+   # Edit .env with your API keys (optional for embedding/indexing)
    ```
 
-### Basic Usage
+### Basic Usage (Python)
 
 ```python
-from src.rag_system import RAGSystem
+from pathlib import Path
+from src.data_ingestion import fetch_documents, chunking
+from src.embedder import embedder
 
-# Initialize RAG system
-rag = RAGSystem(config_path='./config/config.json')
+# 1. Collect document paths
+data_dir = Path("data/processed/pdf_markdown")
+filenames = [str(f) for f in data_dir.rglob("*.md")]
 
-# Ingest documents from directory
-rag.ingest_documents('./data/raw')
+# 2. Load and chunk documents
+documents = fetch_documents(filenames)
+chunks = chunking(documents, chunk_size=1000, chunk_overlap=200)
 
-# Build vector index
-rag.build_index()
+# 3. Create embeddings and vector store
+vectorstore = embedder("./vectors", chunks)
 
-# Query the system
-results = rag.query("Your question here", top_k=5)
-print(results['response'])
+# 4. Query the system
+results = vectorstore.similarity_search("machine learning projects", k=5)
+
+for doc in results:
+    print(f"Type: {doc.metadata['type']}")
+    print(f"Content: {doc.page_content[:200]}...\n")
 ```
 
-### GitHub Documentation Generator
+### With LLM Integration
 
-Generate comprehensive documentation for your GitHub repositories:
+```python
+from langchain_openai import ChatOpenAI
+from langchain.chains import RetrievalQA
+import os
+
+os.environ["OPENAI_API_KEY"] = "sk-..."
+
+llm = ChatOpenAI(model="gpt-4", temperature=0)
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever(search_kwargs={"k": 5})
+)
+
+response = qa_chain.invoke({"query": "What are my key accomplishments?"})
+print(response["result"])
+```
+
+### Visualize Embeddings
+
+```python
+from src.visualize_vector_db import visualize_2d, visualize_3d
+
+# Create interactive 2D visualization
+fig = visualize_2d(vectorstore, title="Document Embeddings")
+fig.show()
+
+# Export 3D visualization
+fig_3d = visualize_3d(vectorstore)
+fig_3d.write_html("embeddings_3d.html")
+```
+
+### Jupyter Notebook
+
+For a complete walkthrough, see `notebooks/pipeline.ipynb`:
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Run the documentation generator
-python src/github_docs/github_docs_generator.py
+jupyter notebook notebooks/pipeline.ipynb
 ```
-
-Required environment variables in `.env`:
-- `GITHUB_USERNAME`: Your GitHub username
-- `GITHUB_TOKEN`: GitHub personal access token (optional, for higher API rate limits)
-- `OPENAI_API_KEY`: OpenAI API key for documentation generation
-
-The generator will:
-1. Fetch all repositories for the specified GitHub username
-2. Analyze repository structure, files, and configurations
-3. Generate comprehensive markdown documentation using AI
-4. Save output to `data/raw/repo_summaries/`
-
-Features:
-- Automatic repository discovery and processing
-- Intelligent file selection (README, configs, source code)
-- AI-powered documentation generation
 - Progress tracking with detailed status updates
 - Configurable processing limits and model selection
 
@@ -155,174 +191,236 @@ For detailed documentation, see [docs/GITHUB_DOCS_GENERATOR.md](docs/GITHUB_DOCS
 
 ## Components
 
-### 1. Data Ingestion (src/data_ingestion/)
-Handles loading documents from various formats.
+### 1. Data Ingestion (src/data_ingestion.py)
+Handles loading documents and creating LangChain Document objects.
 
-- `DocumentLoader`: Load files (TXT, PDF, DOCX, etc.)
-- `DataIngestionPipeline`: Orchestrate document processing
+- `fetch_documents()`: Load files with automatic type detection from folder structure
+- `chunking()`: Split documents using LangChain's RecursiveCharacterTextSplitter
 
-### 2. Text Chunking (src/chunking/)
-Split documents into optimized chunks for embedding.
+### 2. Embeddings (src/embedder.py)
+Generate high-quality vector embeddings using HuggingFace models.
 
-- `TextSplitter`: Fixed-size splitting
-- `RecursiveCharacterSplitter`: Smart splitting on boundaries
+- **Model**: `intfloat/e5-large-v2` (1024-dimensional)
+- **Features**: Normalized embeddings for cosine similarity
+- **Integration**: Direct Chroma vector store creation
 
-### 3. Embeddings (src/embeddings/)
-Generate vector embeddings for text.
+### 3. Vector Store (Chroma)
+Persistent vector database with metadata support.
 
-- `HuggingFaceEmbedder`: Using sentence-transformers
-- `DummyEmbedder`: For testing
+- **Storage**: SQLite + file-based persistence in `vectors/`
+- **Search**: Similarity search, metadata filtering, MMR
+- **Scalability**: Handles up to 10M vectors efficiently
 
-### 4. Vector Store (src/vector_store/)
-Store and retrieve embeddings efficiently.
+### 4. Visualization (src/visualize_vector_db.py)
+Interactive visualization of vector embeddings.
 
-- `InMemoryVectorStore`: Fast in-memory storage
-- Support for Faiss, Pinecone, Weaviate (extensible)
+- `visualize_2d()`: 2D t-SNE scatter plot with hover information
+- `visualize_3d()`: 3D t-SNE interactive visualization
+- **Features**: Color-coded by document type, exportable to HTML
 
-### 5. Retrieval (src/retrieval/)
-Retrieve relevant documents based on queries.
+### 5. PDF Converter (src/pdf_converter.py)
+Convert PDF files to Markdown format.
 
-- `VectorRetriever`: Semantic similarity-based retrieval
+- Extract text from text-based PDFs
+- Preserve folder structure
+- Detailed analysis reports
+- Handle encrypted/scanned PDFs gracefully
 
 ### 6. LLM Integration (src/llm/)
 Connect to language models for response generation.
 
-- `OpenAILLM`: GPT-3.5, GPT-4 support
-- `DummyLLM`: For testing
+- **OpenAI**: GPT-3.5, GPT-4 support
+- **LangChain Integration**: Easy provider switching
+- **Retrieval QA**: Built-in question answering chains
 
 ### 7. GitHub Documentation Generator (src/github_docs/)
 Generate comprehensive documentation for GitHub repositories.
 
-- **github_docs_generator.py**: Main script for automated documentation generation
+- **github_docs_generator.py**: Automated documentation generation
 - Fetches repository structure and content via GitHub API
-- Uses OpenAI API to generate structured markdown documentation
-- Processes repositories with intelligent file selection
-- Outputs detailed documentation to `data/raw/repo_summaries/`
+- Uses OpenAI API for structured markdown generation
+- Outputs to `data/raw/repo_summaries/`
 
 ## Configuration
 
-### config/config.json
-Main configuration file:
+### Environment Variables (.env)
+
+```env
+# OpenAI API Key (for LLM generation, optional for embedding)
+OPENAI_API_KEY=sk-...
+
+# Anthropic API Key (alternative LLM provider)
+ANTHROPIC_API_KEY=sk-ant-...
+
+# GitHub Configuration (for documentation generator)
+GITHUB_USERNAME=your_github_username
+GITHUB_TOKEN=ghp_...
+
+# Paths (optional, defaults exist)
+VECTOR_DB_PATH=./vectors
+DATA_PATH=./data
+```
+
+### Configuration File (config/config.json)
 
 ```json
 {
-  "embedding": {
-    "model": "sentence-transformers/all-MiniLM-L6-v2",
-    "dimension": 384
-  },
   "chunking": {
     "chunk_size": 1000,
-    "overlap": 100
+    "chunk_overlap": 200
+  },
+  "embedding": {
+    "model": "intfloat/e5-large-v2",
+    "dimension": 1024,
+    "normalize": true
+  },
+  "retrieval": {
+    "top_k": 5,
+    "search_type": "similarity"
   },
   "llm": {
     "provider": "openai",
-    "model": "gpt-3.5-turbo"
+    "model": "gpt-4",
+    "temperature": 0.7
   },
   "github_docs": {
     "model": "gpt-4.1-nano",
     "max_tree_items": 800,
     "max_file_chars": 12000,
-    "max_source_files": 12,
     "output_dir": "./data/raw/repo_summaries"
   }
 }
 ```
 
-### .env File
-Set environment variables:
+## Advanced Features
 
-```env
-# OpenAI API Key (required for RAG and GitHub docs)
-OPENAI_API_KEY=your_key_here
+### Metadata Filtering
 
-# GitHub Configuration (for documentation generator)
-GITHUB_USERNAME=your_github_username
-GITHUB_TOKEN=your_github_personal_access_token
-
-# Data paths
-VECTOR_DB_PATH=./vectors
-DATA_PATH=./data
+```python
+# Search only within specific document types
+results = vectorstore.similarity_search(
+    query="neural networks",
+    k=3,
+    filter={"type": "research_papers"}
+)
 ```
 
-## Examples
+### Max Marginal Relevance (Diverse Results)
 
-See [examples/](examples/) directory for detailed examples:
-
-- **basic_usage.py**: Simple RAG workflow
-- **custom_pipeline.py**: Custom components
-- **advanced_features.py**: Advanced configurations
-
-Run examples:
-```bash
-python examples/basic_usage.py
-python examples/custom_pipeline.py
-python examples/advanced_features.py
+```python
+# Get diverse results to avoid redundancy
+results = vectorstore.max_marginal_relevance_search(
+    query="Python programming",
+    k=5,
+    fetch_k=20
+)
 ```
 
-## Testing
+### Load Existing Vector Store
 
-Run tests with pytest:
+```python
+from langchain_chroma import Chroma
+from langchain_huggingface import HuggingFaceEmbeddings
 
-```bash
-pytest tests/
-pytest tests/ -v --cov=src
+embeddings = HuggingFaceEmbeddings(
+    model_name="intfloat/e5-large-v2",
+    encode_kwargs={"normalize_embeddings": True}
+)
+
+vectorstore = Chroma(
+    persist_directory="./vectors",
+    embedding_function=embeddings
+)
 ```
 
-## Development
+### Custom Embedding Models
 
-### Code Style
-- Use Black for formatting: `black src/`
-- Use Flake8 for linting: `flake8 src/`
-- Use mypy for type checking: `mypy src/`
+```python
+# Use different HuggingFace model
+embeddings = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-mpnet-base-v2",
+    model_kwargs={'device': 'cuda'},  # GPU support
+    encode_kwargs={"normalize_embeddings": True}
+)
+```
 
-### Adding New Components
+### Conversational RAG
 
-1. Create new module in `src/`
-2. Implement base class and concrete implementations
-3. Add tests in `tests/`
-4. Update documentation
+```python
+from langchain.chains import ConversationalRetrievalChain
+from langchain.memory import ConversationBufferMemory
+
+memory = ConversationBufferMemory(
+    memory_key="chat_history",
+    return_messages=True
+)
+
+chain = ConversationalRetrievalChain.from_llm(
+    llm=llm,
+    retriever=vectorstore.as_retriever(),
+    memory=memory
+)
+```
 
 ## Integration with Vector Databases
 
-The system is extensible for different vector databases:
+The system supports multiple vector databases via LangChain:
 
 ```python
-# Faiss (local)
-from faiss_adapter import FaissVectorStore
-vector_store = VectorStore(store=FaissVectorStore())
+# Chroma (current default - persistent, local)
+from langchain_chroma import Chroma
+vectorstore = Chroma.from_documents(chunks, embeddings, persist_directory="./vectors")
 
-# Pinecone (cloud)
-from pinecone_adapter import PineconeVectorStore
-vector_store = VectorStore(store=PineconeVectorStore())
+# Pinecone (cloud-based, scalable)
+from langchain_pinecone import PineconeVectorStore
+vectorstore = PineconeVectorStore.from_documents(chunks, embeddings, index_name="your-index")
 
-# Weaviate
-from weaviate_adapter import WeaviateVectorStore
-vector_store = VectorStore(store=WeaviateVectorStore())
+# FAISS (high-performance, local)
+from langchain_community.vectorstores import FAISS
+vectorstore = FAISS.from_documents(chunks, embeddings)
+vectorstore.save_local("./faiss_index")
+
+# Weaviate (hybrid search, cloud/local)
+from langchain_weaviate import WeaviateVectorStore
+vectorstore = WeaviateVectorStore.from_documents(chunks, embeddings, client=client)
 ```
 
 ## Performance Optimization
 
-1. **Batch Processing**: Embed multiple documents at once
-2. **Chunk Optimization**: Adjust chunk_size based on your data
-3. **Model Selection**: Choose embedders based on accuracy vs speed tradeoff
-4. **Caching**: Cache embeddings and retrieval results
+1. **Batch Processing**: Process documents in batches to manage memory
+2. **Chunk Optimization**: Adjust chunk_size (1000-2000) and overlap (100-400) based on your data
+3. **Model Selection**: 
+   - Fast: `sentence-transformers/all-MiniLM-L6-v2` (384-dim)
+   - Balanced: `intfloat/e5-large-v2` (1024-dim, current default)
+   - High Quality: `sentence-transformers/all-mpnet-base-v2` (768-dim)
+4. **GPU Support**: Use `model_kwargs={'device': 'cuda'}` for faster embedding generation
+5. **Vector Store**: Chroma (current) handles <10M vectors efficiently
+6. **Caching**: Persistent Chroma storage eliminates re-embedding on restarts
 
 ## Troubleshooting
 
 ### Out of Memory Issues
-- Reduce `embedding_batch_size` in config.json
-- Use smaller embedding model
-- Process documents in batches
+- Process documents in smaller batches (100 files at a time)
+- Use smaller embedding model: `all-MiniLM-L6-v2`
+- Reduce chunk size to 500-800 characters
+- Set `os.environ["TOKENIZERS_PARALLELISM"] = "false"`
 
 ### Low Retrieval Quality
-- Increase `chunk_size` for better context
-- Fine-tune `overlap` parameter
-- Use higher-quality embedding model
+- Increase chunk_size to 1500-2000 for more context
+- Increase chunk_overlap to 300-400
+- Use higher-quality embedding model: `all-mpnet-base-v2`
+- Verify vector store has documents: `vectorstore._collection.count()`
+- Use visualization to check embedding quality
 
-### Slow Retrieval
-- Implement approximate nearest neighbor search (ANN)
-- Use Faiss or specialized vector databases
-- Optimize chunking strategy
+### Slow Embedding Generation
+- Enable GPU: `model_kwargs={'device': 'cuda'}` or `'mps'` (Mac)
+- Use smaller/faster model: `all-MiniLM-L6-v2`
+- Process documents in parallel batches
+
+### Vector Store Issues
+- Check if `vectors/` directory exists and has `chroma.sqlite3`
+- Ensure consistent embedding model when loading existing store
+- Delete `vectors/` folder to reset and recreate
 
 ## API Reference
 
@@ -353,13 +451,18 @@ For issues and questions:
 
 ## Roadmap
 
-- [ ] GPU support for embeddings
-- [ ] Advanced vector databases integration
-- [ ] Fine-tuning support
-- [ ] Multi-language support
-- [ ] Web interface
-- [ ] REST API
-- [ ] Docker support
+- [x] LangChain integration for document processing
+- [x] Chroma persistent vector store
+- [x] High-quality e5-large-v2 embeddings
+- [x] Interactive 2D/3D visualizations
+- [x] Metadata-based filtering
+- [ ] Streamlit/Gradio web interface
+- [ ] REST API with FastAPI
+- [ ] Docker containerization
+- [ ] Multi-language document support
+- [ ] Advanced RAG techniques (HyDE, RAG-Fusion)
+- [ ] Fine-tuning support for custom domains
+- [ ] Cloud deployment guides (AWS, GCP, Azure)
 
 ## Citation
 
