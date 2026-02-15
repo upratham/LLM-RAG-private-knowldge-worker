@@ -64,6 +64,44 @@ class OpenAILLM(BaseLLM):
             raise Exception(f"Error calling OpenAI: {str(e)}")
 
 
+class LlamaLLM(BaseLLM):
+    """Llama LLM provider via Ollama"""
+    
+    def __init__(self, model: str = "llama2", base_url: str = "http://localhost:11434"):
+        """
+        Initialize Llama LLM via Ollama
+        
+        Args:
+            model: Model name (default: llama2, can be llama3.2, etc.)
+            base_url: Ollama server URL (default: http://localhost:11434)
+        """
+        self.model = model
+        self.base_url = base_url
+        self.client = None
+        self._initialize_client()
+    
+    def _initialize_client(self):
+        """Initialize Ollama client"""
+        try:
+            from langchain_community.llms import Ollama
+            self.client = Ollama(
+                model=self.model,
+                base_url=self.base_url
+            )
+        except ImportError:
+            raise ImportError(
+                "langchain-community is required. Install with: pip install langchain-community"
+            )
+    
+    def generate(self, prompt: str, **kwargs) -> str:
+        """Generate text using Llama via Ollama"""
+        try:
+            response = self.client.invoke(prompt)
+            return response
+        except Exception as e:
+            raise Exception(f"Error calling Llama via Ollama: {str(e)}")
+
+
 class LLMProvider:
     """Main LLM provider interface"""
     
