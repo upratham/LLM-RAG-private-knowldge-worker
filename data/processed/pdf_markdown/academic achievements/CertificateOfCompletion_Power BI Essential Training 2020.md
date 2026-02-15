@@ -1,7 +1,0 @@
-PPoowweerr BBII EEsssseennttiiaall TTrraaiinniinngg ((22002200))
-CCoouurrssee ccoommpplleetteedd bbyy UUrraavvaannee PPrraatthhaammeesshh ssuuhhaass
-OOcctt 0033,, 22002222 aatt 0044::1199PPMM UUTTCC •• 33 hhoouurrss 2244 mmiinnuutteess
-TToopp sskkiillllss ccoovveerreedd
-MMiiccrroossoofftt PPoowweerr BBII
-HHeeaadd ooff GGlloobbaall CCoonntteenntt,, LLeeaarrnniinngg
-CCeerrttiiffiiccaattee IIDD:: 77dd55dd77662211ee11ffdd88ddaa553311cc1122ffaa4411ccbbaa66aa9900bb550077dddd55ee11aa66eeddaaff55bb228811ee77ee2266ff00cc00cc4411

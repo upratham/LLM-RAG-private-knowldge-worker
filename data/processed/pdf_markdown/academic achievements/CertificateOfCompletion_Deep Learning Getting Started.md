@@ -1,7 +1,0 @@
-DDeeeepp LLeeaarrnniinngg:: GGeettttiinngg SSttaarrtteedd
-CCoouurrssee ccoommpplleetteedd bbyy UUrraavvaannee PPrraatthhaammeesshh ssuuhhaass
-NNoovv 0077,, 22002222 aatt 0022::4477PPMM UUTTCC •• 11 hhoouurr 1133 mmiinnuutteess
-TToopp sskkiillllss ccoovveerreedd
-MMaacchhiinnee LLeeaarrnniinngg DDeeeepp LLeeaarrnniinngg
-HHeeaadd ooff GGlloobbaall CCoonntteenntt,, LLeeaarrnniinngg
-CCeerrttiiffiiccaattee IIDD:: bb447711dd2233bbddddaa22aa77dd88aa6644ff66ff22ff6677ddcc66bb006644eeeeffbb99332200994466dd224411ff1188112200ddbbcc55eedd22445599

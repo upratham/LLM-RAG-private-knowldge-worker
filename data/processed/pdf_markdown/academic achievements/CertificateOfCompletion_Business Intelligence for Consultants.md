@@ -1,7 +1,0 @@
-BBuussiinneessss IInntteelllliiggeennccee ffoorr CCoonnssuullttaannttss
-CCoouurrssee ccoommpplleetteedd bbyy UUrraavvaannee PPrraatthhaammeesshh ssuuhhaass
-OOcctt 0011,, 22002222 aatt 0066::4400AAMM UUTTCC •• 2299 mmiinnuutteess
-TToopp sskkiillllss ccoovveerreedd
-BBuussiinneessss IInntteelllliiggeennccee ((BBII))
-HHeeaadd ooff GGlloobbaall CCoonntteenntt,, LLeeaarrnniinngg
-CCeerrttiiffiiccaattee IIDD:: 5555ff662244bbff4499cc33115566557766ccffeeeeaa668888cc7722bbaa22449944aa33ff33ee6666bb1177aa7777ee44cc7788aa1144887700009922aa33

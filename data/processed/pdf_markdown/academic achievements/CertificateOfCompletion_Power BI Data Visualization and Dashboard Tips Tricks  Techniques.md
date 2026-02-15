@@ -1,8 +1,0 @@
-PPoowweerr BBII DDaattaa VViissuuaalliizzaattiioonn aanndd
-DDaasshhbbooaarrdd TTiippss,, TTrriicckkss,, && TTeecchhnniiqquueess
-CCoouurrssee ccoommpplleetteedd bbyy UUrraavvaannee PPrraatthhaammeesshh ssuuhhaass
-OOcctt 0044,, 22002222 aatt 0011::3388PPMM UUTTCC •• 11 hhoouurr 5599 mmiinnuutteess
-TToopp sskkiillllss ccoovveerreedd
-DDaattaa VViissuuaalliizzaattiioonn MMiiccrroossoofftt PPoowweerr BBII
-HHeeaadd ooff GGlloobbaall CCoonntteenntt,, LLeeaarrnniinngg
-CCeerrttiiffiiccaattee IIDD:: 777733ff4488992266bb66ffbb117700ffaa229911aa88eedd11eeee7733667788cc88770033dd99aabb228877992266dd996600aa44334477bb228877bb1177
