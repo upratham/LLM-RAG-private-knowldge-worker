@@ -10,6 +10,7 @@ A comprehensive Retrieval-Augmented Generation (RAG) system for building intelli
 - **Vector Store**: In-memory vector storage with semantic search capabilities
 - **Retrieval**: Retrieve relevant documents based on semantic similarity
 - **LLM Integration**: Seamless integration with OpenAI and other LLM providers
+- **GitHub Documentation Generator**: Automatically generate comprehensive documentation for GitHub repositories
 - **Modular Architecture**: Easily swap components for customization
 
 ## Project Structure
@@ -23,6 +24,7 @@ rag-knowledge-worker/
 │   ├── vector_store/             # Vector database management
 │   ├── retrieval/                # Retrieval mechanisms
 │   ├── llm/                      # LLM integrations
+│   ├── github_docs/              # GitHub documentation generator
 │   ├── utils/                    # Utility functions
 │   └── rag_system.py             # Main RAG orchestrator
 ├── config/                        # Configuration files
@@ -85,6 +87,38 @@ results = rag.query("Your question here", top_k=5)
 print(results['response'])
 ```
 
+### GitHub Documentation Generator
+
+Generate comprehensive documentation for your GitHub repositories:
+
+```bash
+# Activate virtual environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Run the documentation generator
+python src/github_docs/github_docs_generator.py
+```
+
+Required environment variables in `.env`:
+- `GITHUB_USERNAME`: Your GitHub username
+- `GITHUB_TOKEN`: GitHub personal access token (optional, for higher API rate limits)
+- `OPENAI_API_KEY`: OpenAI API key for documentation generation
+
+The generator will:
+1. Fetch all repositories for the specified GitHub username
+2. Analyze repository structure, files, and configurations
+3. Generate comprehensive markdown documentation using AI
+4. Save output to `data/raw/repo_summaries/`
+
+Features:
+- Automatic repository discovery and processing
+- Intelligent file selection (README, configs, source code)
+- AI-powered documentation generation
+- Progress tracking with detailed status updates
+- Configurable processing limits and model selection
+
+For detailed documentation, see [docs/GITHUB_DOCS_GENERATOR.md](docs/GITHUB_DOCS_GENERATOR.md)
+
 ## Components
 
 ### 1. Data Ingestion (src/data_ingestion/)
@@ -122,6 +156,15 @@ Connect to language models for response generation.
 - `OpenAILLM`: GPT-3.5, GPT-4 support
 - `DummyLLM`: For testing
 
+### 7. GitHub Documentation Generator (src/github_docs/)
+Generate comprehensive documentation for GitHub repositories.
+
+- **github_docs_generator.py**: Main script for automated documentation generation
+- Fetches repository structure and content via GitHub API
+- Uses OpenAI API to generate structured markdown documentation
+- Processes repositories with intelligent file selection
+- Outputs detailed documentation to `data/raw/repo_summaries/`
+
 ## Configuration
 
 ### config/config.json
@@ -140,6 +183,13 @@ Main configuration file:
   "llm": {
     "provider": "openai",
     "model": "gpt-3.5-turbo"
+  },
+  "github_docs": {
+    "model": "gpt-4.1-nano",
+    "max_tree_items": 800,
+    "max_file_chars": 12000,
+    "max_source_files": 12,
+    "output_dir": "./data/raw/repo_summaries"
   }
 }
 ```
@@ -148,7 +198,14 @@ Main configuration file:
 Set environment variables:
 
 ```env
+# OpenAI API Key (required for RAG and GitHub docs)
 OPENAI_API_KEY=your_key_here
+
+# GitHub Configuration (for documentation generator)
+GITHUB_USERNAME=your_github_username
+GITHUB_TOKEN=your_github_personal_access_token
+
+# Data paths
 VECTOR_DB_PATH=./vectors
 DATA_PATH=./data
 ```

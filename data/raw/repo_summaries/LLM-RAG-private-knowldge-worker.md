@@ -1,74 +1,143 @@
-<!-- Generated: 2026-02-15T02:58:26.976903Z | Model: gpt-4.1-nano -->
+<!-- Generated: 2026-02-15T03:36:00.497898Z | Model: gpt-4.1-nano -->
 
 # LLM-RAG-private-knowldge-worker
 
 ## Overview
-The **LLM-RAG-private-knowldge-worker** is a project designed to create a private knowledge worker powered by Retrieval-Augmented Generation (RAG) techniques. It leverages large language models (LLMs) to process and generate responses based on a private knowledge base, ensuring data privacy and tailored outputs. This repository is suitable for developers and organizations interested in building secure, AI-driven knowledge assistants that operate on proprietary data.
+The **LLM-RAG-private-knowldge-worker** is a retrieval-augmented generation (RAG) system designed to enable building private, intelligent knowledge workers powered by Large Language Models (LLMs). It facilitates document ingestion, semantic search, and question-answering by combining document processing, embedding generation, vector similarity search, and LLM-based response generation. This system is suitable for developers and data scientists aiming to create customized AI assistants that operate on private datasets.
 
 ## Key Features
-- Implements RAG methodology to combine retrieval of relevant documents with language model generation.
-- Focused on maintaining privacy by working with private knowledge sources.
-- Modular structure allowing customization of retrieval and generation components.
-- Open-source under the MIT license, enabling modification and integration.
+- **Document Ingestion:** Load and process various document formats (TXT, PDF, DOCX) from directories.
+- **Smart Chunking:** Recursive text splitting with overlap support for better context management.
+- **Embeddings:** Generate semantic vector representations using HuggingFace sentence transformers.
+- **Vector Store:** In-memory vector database supporting semantic search for relevant document retrieval.
+- **Retrieval:** Semantic similarity-based document retrieval to find relevant context.
+- **LLM Integration:** Connect seamlessly with OpenAI and other LLM providers for response generation.
+- **Modular Architecture:** Components designed for easy customization and extension.
+- **Configurable:** Use JSON config files and environment variables for flexible setup.
 
 ## Architecture / How it Works
-While detailed architecture diagrams are not provided, based on the repository structure and typical RAG workflows, the system likely involves:
-- A retrieval component that fetches relevant documents or data snippets from a private knowledge base.
-- An LLM-based generator that processes retrieved information to produce coherent responses.
-- Integration points to connect retrieval and generation, possibly configured via files or scripts.
-
-The core process probably involves:
-1. Query input from the user.
-2. Retrieval of relevant data from the private knowledge source.
-3. Feeding retrieved data along with the query into an LLM.
-4. Generating a response based on combined information.
+The system orchestrates several components:
+- **Data Ingestion:** Loads raw documents from specified directories.
+- **Text Chunking:** Splits documents into manageable chunks with overlap to preserve context.
+- **Embedding Generation:** Converts text chunks into vector embeddings.
+- **Vector Store:** Stores embeddings and associated metadata for fast similarity search.
+- **Retrieval:** Finds relevant document chunks based on query embedding.
+- **LLM Response:** Uses retrieved context to generate answers via LLMs.
+- **Main Orchestrator (`rag_system.py`):** Coordinates all components for ingestion, indexing, querying, and saving/loading indices.
 
 ## Notable Folders/Files
-- **.gitignore**: Specifies files and directories to be ignored by Git, ensuring sensitive or unnecessary files are not committed.
-- **LICENSE**: Contains the licensing terms (MIT License), clarifying usage rights.
-- **README.md**: Provides an overview and essential information about the project.
-
-*Note:* The repository does not currently list additional folders or files in the preview, which suggests it might be a minimal or initial version. If there are configuration files or scripts, they are not visible here.
+- **`src/`**: Core source code implementing ingestion, chunking, embeddings, retrieval, LLMs, and system orchestration.
+- **`config/`**: Configuration files (e.g., `config.json`) for system parameters.
+- **`data/`**: Raw and processed documents used for ingestion.
+- **`vectors/`**: Persisted vector indices for fast retrieval.
+- **`tests/`**: Unit tests for verifying system components.
+- **`examples/`**: Sample scripts demonstrating usage and customization.
+- **`docs/`**: Documentation including API references and architecture guides.
+- **`logs/`**: Log files generated during system operation.
 
 ## Setup & Run
-The repository does not include explicit setup instructions in the provided excerpt. However, typical steps inferred might include:
-1. Cloning the repository:
-   ```bash
-   git clone https://github.com/upratham/LLM-RAG-private-knowldge-worker.git
-   ```
-2. Installing dependencies (if any are specified elsewhere, such as in a `requirements.txt` or `setup.py`).
-3. Configuring the private knowledge base and retrieval parameters, likely through configuration files or environment variables.
-4. Running the main script or server, if specified.
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/upratham/LLM-RAG-private-knowldge-worker.git
+cd LLM-RAG-private-knowldge-worker
 
-Without explicit instructions, users may need to explore the code to identify entry points.
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### Configuration
+- Copy example environment variables:
+```bash
+cp .env.example .env
+# Edit `.env` to include your API keys and paths
+```
+- Update `config/config.json` with desired parameters (e.g., embedding model, chunk size).
+
+### Running the System
+- To process documents, build index, and query:
+```python
+from src.rag_system import RAGSystem
+
+# Initialize system
+rag = RAGSystem(config_path='./config/config.json')
+
+# Ingest documents from data/raw
+rag.ingest_documents('./data/raw')
+
+# Build vector index
+rag.build_index()
+
+# Query the system
+results = rag.query("Your question here", top_k=5)
+print(results['response'])
+```
+
+- Or run the main script:
+```bash
+python main.py
+```
 
 ## How to Use
-Based on the purpose, usage might involve:
-- Providing a user query via a command-line interface or API.
-- The system retrieving relevant documents from the private knowledge base.
-- Generating a response that combines retrieved data with LLM capabilities.
+### Basic Workflow
+```python
+from src.rag_system import RAGSystem
 
-Example (hypothetical):
-```bash
-python main.py --query "What is the company's policy on data privacy?"
+rag = RAGSystem(config_path='./config/config.json')
+rag.ingest_documents('./data/raw')  # Load documents
+rag.build_index()                     # Create vector index
+response = rag.query("What is the main topic?", top_k=3)
+print(response['response'])
 ```
-*Note:* Actual usage instructions are not provided, so this is an inference.
+
+### Example Queries
+- Ask questions based on ingested documents.
+- Retrieve relevant context snippets.
+- Generate detailed answers using integrated LLMs.
+
+### Customization
+- Replace or extend components like embedder, retriever, or LLM provider.
+- Adjust `config/config.json` for different models or parameters.
+- Use examples provided in `examples/` for more advanced workflows.
 
 ## Testing / CI
-There is no information about testing frameworks or CI/CD pipelines in the provided data. The presence of only a few files suggests that testing might not be set up yet or is not documented.
+- Tests are located in `tests/test_rag.py`.
+- Run tests with:
+```bash
+pytest tests/
+```
+- Coverage and verbose output:
+```bash
+pytest tests/ -v --cov=src
+```
 
 ## Deployment
-No deployment instructions or scripts are visible in the current repository snapshot. Deployment might involve running the main application locally or integrating it into a larger system, depending on further configuration.
+- The system is designed for local or server deployment.
+- Save and load vector indices:
+```python
+rag.save_index('./vectors/index.json')
+rag.load_index('./vectors/index.json')
+```
+- For production, consider integrating with external vector databases like Faiss, Pinecone, or Weaviate for scalability.
 
 ## Contribution Notes
-No specific contribution guidelines are included in the provided data. For open-source projects, it is common to fork, create feature branches, and submit pull requests, but users should check for any contributing guidelines in the repository if available.
+- Create feature branches.
+- Implement components or fixes.
+- Run tests and adhere to code style (`black`, `flake8`).
+- Submit pull requests with clear descriptions.
+- Update documentation as needed.
 
 ## Limitations / TODOs (Inferred)
-- Lack of detailed setup and usage instructions; users may need to explore code to understand configuration.
-- No explicit testing or CI/CD pipelines documented.
-- The architecture and flow are inferred; detailed design documentation is absent.
-- Future improvements could include comprehensive documentation, example workflows, and deployment guides.
+- Currently supports in-memory vector store; external vector DB integration is extensible but not implemented by default.
+- No explicit support for GPU acceleration; embeddings may be slow on large datasets.
+- Limited to English documents; multi-language support is a potential future enhancement.
+- No web interface or REST API; CLI or script-based interaction only.
+- Fine-tuning of models and advanced customization are not included but can be added.
 
 ---
 
-*For more information, visit the [GitHub repository](https://github.com/upratham/LLM-RAG-private-knowldge-worker).*
+*Note:* Some features and configurations are inferred from the provided files and structure. For detailed API documentation, refer to `docs/API_REFERENCE.md`.
